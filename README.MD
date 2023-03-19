@@ -2,17 +2,20 @@
 
 🔍 Interactive chat-based search engine with OpenAI, inspired by New Bing.
 
-# Dependencies
+### Dependencies
 
 Because it's VERY SLOW to call OpenAI API with OpenAI Python library or other HTTP libraries, so this program depends on `curl` to call OpenAI API via shell command & subprocess.
 
-# Usage
+### Usage
 
 ```bash
 python3 main.py
 ```
 
-# Demo
+Because the model is not yet fine-tuned, you need to say hello to it before making a chat or query.
+
+
+### Demo
 
 ```markdown
 [user](#message)
