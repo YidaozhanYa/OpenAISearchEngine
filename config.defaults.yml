@@ -1,2 +1,7 @@
-api_key: 'Y0urAPIK3y'
-bing_key: 'B1ngAPIK3y'
+openai_api_key: 'y0uR-0p3n4i-k3y'
+bing_api_key: 'y0uR-b1ng-k3y'
+openai_language: 'Chinese'
+bing_language: 'zh-CN'
+search_results_count: 5
+save_chat_history: true
+chat_history_filename: 'chat_history.txt'

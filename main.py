@@ -10,7 +10,7 @@ async def completion(prompt: str) -> str:
     output: str = ''
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {config.api_key}',
+        'Authorization': f'Bearer {config.openai_api_key}',
     }
     endpoint = 'https://api.openai.com/v1/engines/text-davinci-003/completions'
     params = {
@@ -70,7 +70,7 @@ def append_system_search_result(prompt: str, search_result: str) -> str:
 
 
 def check_if_need_search(text: str) -> bool:
-    if text.strip().startswith('[assistant](#online_search)'):
+    if '(#online_search)' in text.strip():
         return True
 
 
@@ -80,11 +80,11 @@ async def perform_search(search_term: str) -> str:
             url='https://api.bing.microsoft.com/v7.0/search',
             params={
                 'q': search_term,
-                'count': 5,
-                'mkt': 'zh-CN',
+                'count': config.search_results_count,
+                'mkt': config.bing_language
             },
             headers={
-                'Ocp-Apim-Subscription-Key': config.bing_key,
+                'Ocp-Apim-Subscription-Key': config.bing_api_key,
             }
     ) as resp:
         results: list[dict] = []
@@ -101,7 +101,7 @@ async def perform_search(search_term: str) -> str:
 async def main():
     prompt = (
         '[system](#intro)'
-        '\nYou are a smart AI assistant who can answer questions from users.'
+        '\nYou are a smart AI assistant who can answer questions from users. You are helpful, polite, and friendly.'
         '\nYour responses should be informative, visual, logical and actionable.'
         '\nYour responses should also be positive, polite, interesting, entertaining and **engaging**.'
         '\nYour logic and reasoning should be rigorous and intelligent.'
@@ -123,7 +123,7 @@ async def main():
     appended_prompt = (
         '\n\n[system](#new_user)'
         '\nA new user has joined the conversation.'
-        '\nThis user is using Chinese.\n'
+        f'\nThis user is using {config.openai_language}.\n'
     )
     prompt += appended_prompt
     print(appended_prompt)
@@ -137,8 +137,8 @@ async def main():
             output = await completion(prompt)
             if check_if_need_search(output):
                 search_term = output.strip().split('\n')[1]
-                print(f'\n正在搜索 {search_term} ...')
-                # 删除上一次的搜索结果
+                print(f'\nSearching {search_term} ...')
+                # Delete the last search result to prevent GPT from generating false search results by itself
                 prompt = re.sub(r"\[system\]\(#search_result\)\n.+", "", prompt)
                 search_result = await perform_search(search_term)
                 prompt = append_system_search_result(prompt, search_result)
@@ -146,11 +146,9 @@ async def main():
                 output = await completion(prompt)
             prompt += (output + '\n')
     except KeyboardInterrupt:
-        open('chat_log.txt', 'w').write(prompt)
-
-
-async def main2():
-    print(await perform_search('美国总统'))
+        if config.save_chat_history:
+            open(config.chat_history_filename, 'w').write(prompt)
+        print('Down, miss you.')
 
 
 asyncio.run(main())
